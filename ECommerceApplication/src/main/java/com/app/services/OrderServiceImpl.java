@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.app.entites.*;
+import com.app.repositories.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -13,23 +15,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import com.app.entites.Cart;
-import com.app.entites.CartItem;
-import com.app.entites.Order;
-import com.app.entites.OrderItem;
-import com.app.entites.Payment;
-import com.app.entites.Product;
 import com.app.exceptions.APIException;
 import com.app.exceptions.ResourceNotFoundException;
 import com.app.payloads.OrderDTO;
 import com.app.payloads.OrderItemDTO;
 import com.app.payloads.OrderResponse;
-import com.app.repositories.CartItemRepo;
-import com.app.repositories.CartRepo;
-import com.app.repositories.OrderItemRepo;
-import com.app.repositories.OrderRepo;
-import com.app.repositories.PaymentRepo;
-import com.app.repositories.UserRepo;
 
 import jakarta.transaction.Transactional;
 
@@ -45,6 +35,9 @@ public class OrderServiceImpl implements OrderService {
 
 	@Autowired
 	public OrderRepo orderRepo;
+
+	@Autowired
+	public BankRepo bankRepo;
 
 	@Autowired
 	private PaymentRepo paymentRepo;
@@ -65,7 +58,13 @@ public class OrderServiceImpl implements OrderService {
 	public ModelMapper modelMapper;
 
 	@Override
-	public OrderDTO placeOrder(String email, Long cartId, String paymentMethod) {
+	public String addBank(Bank bank) {
+		Bank savedBank = bankRepo.save(bank);
+		return "Bank added with id: " + savedBank.getBankId();
+	}
+
+	@Override
+	public OrderDTO placeOrder(String email, Long cartId, String bankName) {
 
 		Cart cart = cartRepo.findCartByEmailAndCartId(email, cartId);
 
@@ -83,7 +82,15 @@ public class OrderServiceImpl implements OrderService {
 
 		Payment payment = new Payment();
 		payment.setOrder(order);
-		payment.setPaymentMethod(paymentMethod);
+		payment.setPaymentMethod("BANK_TRANSFER");
+
+		Bank bank = bankRepo.findBankByBankNameLike(bankName);
+
+		if (bank == null) {
+			throw new ResourceNotFoundException("Bank", "BankName", bankName);
+		}
+
+		payment.setBank(bank);
 
 		payment = paymentRepo.save(payment);
 
