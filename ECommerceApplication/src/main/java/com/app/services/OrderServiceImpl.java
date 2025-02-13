@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.app.entites.*;
+import com.app.payloads.BankDTO;
 import com.app.repositories.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,13 +59,36 @@ public class OrderServiceImpl implements OrderService {
 	public ModelMapper modelMapper;
 
 	@Override
-	public String addBank(Bank bank) {
+	public String addBank(BankDTO bankDTO) {
+
+		Bank bank = modelMapper.map(bankDTO, Bank.class);
+
+		if (bankRepo.findBankByAccountNumber(bank.getAccountNumber()) != null) {
+			throw new APIException("Bank with account number: " + bank.getAccountNumber() + " already exists");
+		}
+
 		Bank savedBank = bankRepo.save(bank);
-		return "Bank added with id: " + savedBank.getBankId();
+
+		return "Bank added successfully with account number: " + savedBank.getAccountNumber();
 	}
 
 	@Override
-	public OrderDTO placeOrder(String email, Long cartId, String bankName) {
+	public List<BankDTO> getBanks() {
+
+		List<Bank> banks = bankRepo.findAll();
+
+		List<BankDTO> bankDTOs = banks.stream().map(bank -> modelMapper.map(bank, BankDTO.class))
+				.collect(Collectors.toList());
+
+		if (bankDTOs.size() == 0) {
+			throw new APIException("No banks found");
+		}
+
+		return bankDTOs;
+	}
+
+	@Override
+	public OrderDTO placeOrder(String email, Long cartId, String accountNumber) {
 
 		Cart cart = cartRepo.findCartByEmailAndCartId(email, cartId);
 
@@ -84,10 +108,10 @@ public class OrderServiceImpl implements OrderService {
 		payment.setOrder(order);
 		payment.setPaymentMethod("BANK_TRANSFER");
 
-		Bank bank = bankRepo.findBankByBankNameLike(bankName);
+		Bank bank = bankRepo.findBankByAccountNumber(accountNumber);
 
 		if (bank == null) {
-			throw new ResourceNotFoundException("Bank", "BankName", bankName);
+			throw new ResourceNotFoundException("Bank", "Account Number", accountNumber);
 		}
 
 		payment.setBank(bank);

@@ -3,6 +3,7 @@ package com.app.controllers;
 import java.util.List;
 
 import com.app.entites.Bank;
+import com.app.payloads.BankDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,16 +25,23 @@ public class OrderController {
 	@Autowired
 	public OrderService orderService;
 
-	@PostMapping("/admin/addBank")
-	public ResponseEntity<String> addBank(@Valid @RequestBody Bank newBank) {
-		String status = orderService.addBank(newBank);
+	@PostMapping("/admin/bank")
+	public ResponseEntity<String> addBank(@Valid @RequestBody BankDTO bankDTO) {
+		String status = orderService.addBank(bankDTO);
 
 		return new ResponseEntity<String>(status, HttpStatus.CREATED);
 	}
+
+	@GetMapping("/public/banks")
+	public ResponseEntity<List<BankDTO>> getBanks() {
+		List<BankDTO> banks = orderService.getBanks();
+
+		return new ResponseEntity<List<BankDTO>>(banks, HttpStatus.FOUND);
+	}
 	
-	@PostMapping("/public/users/{email}/carts/{cartId}/payments/{bankName}/order")
-	public ResponseEntity<OrderDTO> orderProducts(@PathVariable String email, @PathVariable Long cartId, @PathVariable String bankName) {
-		OrderDTO order = orderService.placeOrder(email, cartId, bankName);
+	@PostMapping("/public/users/{email}/carts/{cartId}/payments/{accountNumber}/order")
+	public ResponseEntity<OrderDTO> orderProducts(@PathVariable String email, @PathVariable Long cartId, @PathVariable String accountNumber) {
+		OrderDTO order = orderService.placeOrder(email, cartId, accountNumber);
 		
 		return new ResponseEntity<OrderDTO>(order, HttpStatus.CREATED);
 	}
