@@ -25,7 +25,7 @@ public class OrderController {
 	@Autowired
 	public OrderService orderService;
 
-	@PostMapping("/admin/addBank")
+	@PostMapping("/admin/bank")
 	public ResponseEntity<String> addBank(@Valid @RequestBody BankDTO bankDTO) {
 		String status = orderService.addBank(bankDTO);
 
