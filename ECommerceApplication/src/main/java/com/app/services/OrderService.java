@@ -3,6 +3,7 @@ package com.app.services;
 import java.util.List;
 
 import com.app.entites.Bank;
+import com.app.payloads.BankDTO;
 import com.app.payloads.OrderDTO;
 import com.app.payloads.OrderResponse;
 import jakarta.validation.Valid;
@@ -19,5 +20,5 @@ public interface OrderService {
 	
 	OrderDTO updateOrder(String email, Long orderId, String orderStatus);
 
-	String addBank(@Valid Bank newBank);
+	String addBank(BankDTO bankDTO);
 }

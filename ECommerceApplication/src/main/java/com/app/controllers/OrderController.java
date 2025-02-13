@@ -3,6 +3,7 @@ package com.app.controllers;
 import java.util.List;
 
 import com.app.entites.Bank;
+import com.app.payloads.BankDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,8 +26,8 @@ public class OrderController {
 	public OrderService orderService;
 
 	@PostMapping("/admin/addBank")
-	public ResponseEntity<String> addBank(@Valid @RequestBody Bank newBank) {
-		String status = orderService.addBank(newBank);
+	public ResponseEntity<String> addBank(@Valid @RequestBody BankDTO bankDTO) {
+		String status = orderService.addBank(bankDTO);
 
 		return new ResponseEntity<String>(status, HttpStatus.CREATED);
 	}

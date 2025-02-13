@@ -9,4 +9,6 @@ public interface BankRepo extends JpaRepository<Bank, Long> {
 
     Bank findBankByBankNameLike(String bankName);
 
+    Bank findBankByAccountNumber(String accountNumber);
+
 }
